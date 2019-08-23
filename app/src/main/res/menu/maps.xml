@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/mi_url"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/mi_maasto"
+            android:title="@string/maasto" />
+        <item
+            android:id="@+id/mi_tausta"
+            android:title="@string/tausta" />
+        <item
+            android:id="@+id/mi_orto"
+            android:title="@string/orto" />
+    </group>
+    <item
+        android:id="@+id/mi_settings"
+        android:title="@string/settings">
+        <menu>
+            <group>
+                <item
+                    android:id="@+id/mi_diron"
+                    android:checkable="true"
+                    android:title="@string/diron" />
+                <item
+                    android:id="@+id/mi_ruleron"
+                    android:checkable="true"
+                    android:title="@string/rulon"></item>
+                <item
+                    android:id="@+id/mi_speedon"
+                    android:checkable="true"
+                    android:title="@string/speedon" />
+                <item
+                    android:id="@+id/mi_orangeon"
+                    android:checkable="true"
+                    android:title="@string/orange" />
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/mi_screen"
+        android:title="@string/screenmode">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/mi_screenoff"
+                    android:title="@string/screenoff" />
+                <item
+                    android:id="@+id/mi_screenchg"
+                    android:title="@string/screenchg" />
+                <item
+                    android:id="@+id/mi_screenon"
+                    android:title="@string/screenon" />
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/mi_about"
+        android:title="@string/about" />
+</menu>

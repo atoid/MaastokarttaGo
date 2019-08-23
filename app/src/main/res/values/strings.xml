@@ -1,0 +1,26 @@
+<resources>
+    <!-- Main layout -->
+    <string name="app_name">Maastokartta Go</string>
+    <string name="zoom_p">Zoom +</string>
+    <string name="zoom_m">Zoom -</string>
+    <string name="maasto">Maastokartta</string>
+    <string name="tausta">Taustakartta</string>
+    <string name="orto">Ilmakuva</string>
+    <string name="screenmode">Näytön tila</string>
+    <string name="screenoff">Saa sammua</string>
+    <string name="screenchg">Latauksessa päällä</string>
+    <string name="screenon">Aina päällä</string>
+    <string name="diron">Näytä suunta</string>
+    <string name="rulon">Näytä mittajana</string>
+    <string name="speedon">Näytä nopeus</string>
+    <string name="settings">Asetukset</string>
+    <string name="orange">Oranssi osoitin</string>
+
+    <!-- About dialog -->
+    <string name="about">Tietoja</string>
+    <string name="abouttitle">Maastokartta Go tietoja</string>
+    <string name="location">Sijainti kartalla</string>
+    <string name="licenses">Lisenssit</string>
+    <string name="licinfo">Kartta-aineistojen tarjoaja ja lisenssit:\n\thttps://kartat.kapsi.fi\n\thttps://www.kapsi.fi\n\nKarttatiilien lataukseen käytetään Picasso kirjastoa:\n\thttps://square.github.io/picasso</string>
+    <string name="close">Sulje</string>
+</resources>
