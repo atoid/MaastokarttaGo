@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onResume() {
-        super.onPause();
+        super.onResume();
         requestUpdates();
         setScreenOnOff();
         Log.d(TAG, "onResume");
