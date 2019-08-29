@@ -1,6 +1,5 @@
 package com.apophis.maastokarttago;
 
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -10,10 +9,11 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
-public class AboutDlg {
+class AboutDlg {
     private AlertDialog mDlg;
+    private Context mCtx;
 
-    public AboutDlg(Context ctx) {
+    AboutDlg(Context ctx) {
         AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
 
         LayoutInflater inflater = ((AppCompatActivity) ctx).getLayoutInflater();
@@ -26,22 +26,21 @@ public class AboutDlg {
         });
 
         mDlg = builder.create();
+        mCtx = ctx;
     }
 
-    public void show() {
+    void show() {
         mDlg.show();
     }
 
-    public void updateCoords(double lat, double lng) {
+    void updateCoords(double lat, double lng) {
         TextView tv;
         tv = mDlg.findViewById(R.id.ab_lat);
-
-        if (tv == null)
-            return;
-
-        tv.setText("N: " + String.format(Locale.ROOT, "%.6f", lat));
+        if (tv != null)
+            tv.setText(String.format(Locale.ROOT, mCtx.getResources().getString(R.string.lat_n), lat));
         tv = mDlg.findViewById(R.id.ab_lng);
-        tv.setText("E: " + String.format(Locale.ROOT, "%.6f", lng));
+        if (tv != null)
+            tv.setText(String.format(Locale.ROOT, mCtx.getResources().getString(R.string.lng_n), lng));
     }
 }
 
