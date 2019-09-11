@@ -19,8 +19,7 @@ class AppSettings {
     SharedPreferences mPrefs;
     MainActivity mApp;
 
-    AppSettings(MainActivity app)
-    {
+    AppSettings(MainActivity app) {
         mApp = app;
     }
 

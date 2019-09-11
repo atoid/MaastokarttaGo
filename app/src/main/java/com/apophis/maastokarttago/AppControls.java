@@ -21,8 +21,7 @@ class AppControls {
     MainActivity mApp;
     float mMovex, mMovey;
 
-    AppControls(MainActivity app)
-    {
+    AppControls(MainActivity app) {
         mApp = app;
     }
 
