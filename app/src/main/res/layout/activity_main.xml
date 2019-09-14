@@ -102,4 +102,15 @@
         tools:layout_editor_absoluteY="344dp"
         tools:text="100" />
 
+    <ImageButton
+        android:id="@+id/btn_markers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toEndOf="@+id/btn_maps"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/ic_menu_add" />
+
 </android.support.constraint.ConstraintLayout>

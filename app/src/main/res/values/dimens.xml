@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="marker_w">20dp</dimen>
+    <dimen name="marker_h">30dp</dimen>
+    <dimen name="toast_offset">70dp</dimen>
+</resources>

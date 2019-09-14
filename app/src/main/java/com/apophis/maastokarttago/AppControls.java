@@ -82,6 +82,19 @@ class AppControls {
             }
         });
 
+        ib = mApp.findViewById(R.id.btn_markers);
+        ib.bringToFront();
+        ib.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mApp, MarkersActivity.class);
+                mApp.updateCoords();
+                double[] coords = {mApp.mSettings.lat, mApp.mSettings.lng};
+                intent.putExtra("coords", coords);
+                mApp.startActivityForResult(intent, mApp.MARKER_REQUEST);
+            }
+        });
+
         final SeekBar sb = mApp.findViewById(R.id.sb_brightness);
         sb.bringToFront();
         sb.setProgress(mApp.mSettings.alpha);
@@ -361,10 +374,10 @@ class AppControls {
                 float nx = event.getX();
                 float ny = event.getY();
 
-                float dx = nx - mMovex;
-                float dy = ny - mMovey;
+                int dx = (int) (nx - mMovex);
+                int dy = (int) (ny - mMovey);
 
-                mApp.moveTiles((int) dx, (int) dy);
+                mApp.moveTiles(dx, dy);
 
                 mMovex = nx;
                 mMovey = ny;
@@ -372,6 +385,10 @@ class AppControls {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 updateRuler();
+                if (!mApp.mSettings.follow) {
+                    mApp.updateCoords();
+                    mApp.mMarkers.update(mApp.mSettings.lat, mApp.mSettings.lng);
+                }
                 break;
         }
         return true;

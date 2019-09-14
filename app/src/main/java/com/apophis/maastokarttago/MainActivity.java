@@ -1,6 +1,8 @@
 package com.apophis.maastokarttago;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.constraint.ConstraintLayout;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     final int SCREEN_MODE_CGH = 1;
     final int SCREEN_MODE_ON = 2;
     final String COLOR_ORANGE = "#FF6A00";
+    final int MARKER_REQUEST = 1;
 
     FusedLocationProviderClient mFusedLocationClient;
     LocationRequest mLocationRequest;
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     boolean mInitialized = false;
     AppSettings mSettings = new AppSettings(this);
     AppControls mControls = new AppControls(this);
+    MarkersView mMarkers = new MarkersView(this);
     AboutDlg mAboutDlg;
     int mTileSz = DEFAULT_TILESZ;
 
@@ -97,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "View is ready");
                 initTiles();
                 mControls.init();
+                mMarkers.init();
                 update();
                 mInitialized = true;
             }
@@ -134,6 +139,35 @@ public class MainActivity extends AppCompatActivity {
         requestUpdates();
         mControls.setScreenOnOff();
         Log.d(TAG, "onResume");
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case MARKER_REQUEST: {
+                if (resultCode == Activity.RESULT_OK) {
+                    double[] coords = data.getDoubleArrayExtra("coords");
+                    boolean reload = data.getBooleanExtra("reload", false);
+
+                    if (coords != null) {
+                        mSettings.follow = false;
+                        mSettings.lat = coords[0];
+                        mSettings.lng = coords[1];
+                        ImageView iw_dir = findViewById(R.id.dir_icon);
+                        ImageView iw_ctr = findViewById(R.id.ctr_icon);
+                        mControls.setFollowOnOff(iw_ctr, iw_dir);
+                        mMarkers.load();
+                        update(mSettings.lat, mSettings.lng, true);
+                    }
+                    else if (reload) {
+                        mMarkers.load();
+                        mMarkers.update(mSettings.lat, mSettings.lng);
+                    }
+                }
+                break;
+            }
+        }
     }
 
     public void onRequestPermissionsResult(int requestCode,
@@ -285,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private MapCenter calculateCenterTile(double lat, double lng)
+    MapCenter calculateCenterTile(double lat, double lng)
     {
         double tx, ty;
         try {
@@ -452,6 +486,8 @@ public class MainActivity extends AppCompatActivity {
             dy = (dy < 0) ? -MAX_MOVE : MAX_MOVE;
         }
 
+        mMarkers.move(dx, dy);
+
         for (int i = 0; i < mTiles.length; i++)
         {
             moveSingleTile(mTiles[i], dx, dy);
@@ -542,6 +578,7 @@ public class MainActivity extends AppCompatActivity {
             setTileImages(ctr.tilex, ctr.tiley);
             setBrightness(mSettings.alpha);
             moveTiles(ctr.dx, ctr.dy);
+            mMarkers.update(lat, lng);
         }
 
         mControls.updateRuler();

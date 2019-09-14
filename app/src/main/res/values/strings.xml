@@ -22,7 +22,19 @@
     <string name="location">Sijainti kartalla</string>
     <string name="licenses">Lisenssit</string>
     <string name="licinfo">Kartta-aineistojen tarjoaja ja lisenssit:\n\thttps://kartat.kapsi.fi\n\thttps://www.kapsi.fi\n\nKarttatiilien lataukseen käytetään Picasso kirjastoa:\n\thttps://square.github.io/picasso</string>
-    <string name="close">Sulje</string>
     <string name="lat_n">N: %.6f</string>
     <string name="lng_n">E: %.6f</string>
+
+    <!-- Marker dialog -->
+    <string name="markerlist">Omat paikat</string>
+    <string name="marker">Paikan tiedot</string>
+    <string name="latitude">Latitudi N:</string>
+    <string name="longitude">Longitudi E:</string>
+    <string name="name">Nimi:</string>
+    <string name="show">Näytä kartalla</string>
+
+    <!-- Dialog buttons -->
+    <string name="close">Sulje</string>
+    <string name="save">Tallenna</string>
+    <string name="remove">Poista</string>
 </resources>
