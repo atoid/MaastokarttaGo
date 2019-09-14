@@ -431,7 +431,7 @@ public class MainActivity extends AppCompatActivity {
         tile.dirty = false;
     }
 
-    private void moveSingleTile(MapTile tile, int dx, int dy)
+    private int moveSingleTile(MapTile tile, int dx, int dy)
     {
         ImageView iw = tile.img;
 
@@ -472,7 +472,9 @@ public class MainActivity extends AppCompatActivity {
         if (tile.dirty)
         {
             updateTileImage(tile);
+            return 1;
         }
+        return 0;
     }
     
     void moveTiles(int dx, int dy) {
@@ -486,11 +488,23 @@ public class MainActivity extends AppCompatActivity {
             dy = (dy < 0) ? -MAX_MOVE : MAX_MOVE;
         }
 
-        mMarkers.move(dx, dy);
-
+        int dirty = 0;
         for (int i = 0; i < mTiles.length; i++)
         {
-            moveSingleTile(mTiles[i], dx, dy);
+            dirty += moveSingleTile(mTiles[i], dx, dy);
+        }
+
+        // Move or update markers
+        if (!mSettings.follow) {
+            mMarkers.move(dx, dy);
+        }
+        else {
+            if (dirty == 0) {
+                mMarkers.move(dx, dy);
+            }
+            else {
+                mMarkers.update(mSettings.lat, mSettings.lng);
+            }
         }
     }
 
