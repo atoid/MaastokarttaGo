@@ -99,6 +99,10 @@ class MarkersView {
                 y += mApp.mTileSz/2 - ctr.dy;
                 moveTo(i, x, y);
             }
+            else {
+                ImageView iw = mImages[i];
+                iw.setVisibility(View.INVISIBLE);
+            }
         }
 
         // Hide rest
