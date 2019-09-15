@@ -13,6 +13,7 @@ class MarkerDlg {
     private AlertDialog mDlg;
     private MarkersActivity mCtx;
     private double mLat = 0, mLng = 0;
+    private int mId = 0;
 
     MarkerDlg(MarkersActivity ctx) {
         AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
@@ -21,7 +22,7 @@ class MarkerDlg {
         builder.setNegativeButton(R.string.save, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // Save clicked
-                addMarker();
+                saveMarker();
                 mCtx.updateView();
             }
         });
@@ -39,7 +40,7 @@ class MarkerDlg {
                 et = mDlg.findViewById(R.id.marker_name);
                 String name = et.getText().toString();
 
-                mCtx.removeMarker(name);
+                mCtx.removeMarker(mId);
                 mCtx.updateView();
             }
         });
@@ -57,14 +58,13 @@ class MarkerDlg {
             @Override
             public void onClick(View v) {
                 mDlg.dismiss();
-                addMarker();
+                saveMarker();
                 mCtx.showMarker(mLat, mLng);
             }
         });
     }
 
-    void addMarker() {
-        // Save clicked
+    void saveMarker() {
         EditText et;
         et = mDlg.findViewById(R.id.marker_name);
         String name = et.getText().toString();
@@ -83,7 +83,7 @@ class MarkerDlg {
             lng = 0;
         }
 
-        mCtx.addMarker(name, lat, lng);
+        mCtx.saveMarker(mId, name, lat, lng);
     }
 
     void setName(String name) {
@@ -93,6 +93,10 @@ class MarkerDlg {
             et.setText(name);
             et.requestFocus();
         }
+    }
+
+    void setId(int id) {
+        mId = id;
     }
 
     void setLatLng(double lat, double lng) {

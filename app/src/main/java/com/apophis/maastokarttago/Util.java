@@ -15,22 +15,33 @@ class Util {
     static void loadMarkers(Context ctx, ArrayList<Marker> markersList) {
         SharedPreferences prefs = ctx.getSharedPreferences(MARKERS_FILE, ctx.MODE_PRIVATE);
         if (prefs != null) {
+            int id = 0;
             Map<String, ?> markers = prefs.getAll();
             for (String key : markers.keySet()) {
-                String[] coords = ((String) markers.get(key)).split(",");
-                double lat, lng;
+                String[] data = ((String) markers.get(key)).split(",");
 
+                // Migrate from old format
+                if (data.length < 3) {
+                    String[] mig_data = new String[3];
+                    mig_data[0] = key;
+                    mig_data[1] = data[0];
+                    mig_data[2] = data[1];
+                    data = mig_data;
+                }
+
+                double lat, lng;
                 try {
-                    lat = Double.parseDouble(coords[0]);
-                    lng = Double.parseDouble(coords[1]);
+                    lat = Double.parseDouble(data[1]);
+                    lng = Double.parseDouble(data[2]);
                 }
                 catch (Exception e) {
                     lat = 0.0;
                     lng = 0.0;
                 }
 
-                Marker m = new Marker(key, lat, lng);
+                Marker m = new Marker(id, data[0], lat, lng);
                 markersList.add(m);
+                id++;
             }
         }
     }
@@ -43,9 +54,9 @@ class Util {
         editor.clear();
         for (int i = 0; i < markersList.size(); i++) {
             Marker m = markersList.get(i);
-            String name = m.name;
-            String coords = String.format(Locale.ROOT, "%.6f,%.6f", m.lat, m.lng);
-            editor.putString(name, coords);
+            String name = String.format(Locale.ROOT,"%d", i);
+            String data = String.format(Locale.ROOT, "%s,%.6f,%.6f", m.name, m.lat, m.lng);
+            editor.putString(name, data);
         }
         editor.apply();
     }

@@ -10,15 +10,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Locale;
 
 class Marker {
+    int id;
     String name;
     double lat;
     double lng;
     double dist;
 
-    Marker(String name, double lat, double lng) {
+    Marker(int id, String name, double lat, double lng) {
+        this.id = id;
         this.name = name;
         this.lat = lat;
         this.lng = lng;
@@ -71,8 +72,11 @@ public class MarkersActivity extends AppCompatActivity {
                 Marker m = mMarkers.get(position);
                 mDlg.setLatLng(m.lat, m.lng);
                 mDlg.setName(m.name);
+                mDlg.setId(m.id);
             }
         });
+
+        Util.loadMarkers(this, mMarkers);
 
         mDlg = new MarkerDlg(this);
         Intent intent = getIntent();
@@ -83,9 +87,9 @@ public class MarkersActivity extends AppCompatActivity {
             mDlg.show();
             mDlg.setLatLng(mLat, mLng);
             mDlg.setName("");
+            mDlg.setId(-1);
         }
 
-        Util.loadMarkers(this, mMarkers);
         updateView();
     }
 
@@ -96,9 +100,8 @@ public class MarkersActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
-        Util.saveMarkers(this, mMarkers);
-
         if (mDirty) {
+            Util.saveMarkers(this, mMarkers);
             mResultIntent.putExtra("reload", true);
             setResult(Activity.RESULT_OK, mResultIntent);
         }
@@ -106,23 +109,48 @@ public class MarkersActivity extends AppCompatActivity {
         super.finish();
     }
 
-    void addMarker(String name, double lat, double lng) {
-        if (!name.isEmpty()) {
-            Marker m = new Marker(name, lat, lng);
+    void saveMarker(int id, String name, double lat, double lng) {
+        if (name.isEmpty() || name.contains(",")) {
+            return;
+        }
+
+        // Create new marker or save changes
+        if (id == -1) {
+            Marker m = new Marker(mMarkers.size(), name, lat, lng);
             mMarkers.add(m);
             mDirty = true;
         }
+        else {
+            Marker m = findById(id);
+            if (m != null) {
+                m.name = name;
+                m.lat = lat;
+                m.lng = lng;
+                mDirty = true;
+            }
+        }
     }
 
-    void removeMarker(String name) {
-        if (!name.isEmpty()) {
-            for (int i = 0; i < mMarkers.size(); i++) {
-                if (mMarkers.get(i).name.equals(name))
-                {
-                    mMarkers.remove(i);
-                    mDirty = true;
-                    break;
-                }
+    Marker findById(int id) {
+        for (int i = 0; i < mMarkers.size(); i++) {
+            Marker m = mMarkers.get(i);
+            if (id == m.id) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    void removeMarker(int id) {
+        if (id == -1)
+            return;
+
+        for (int i = 0; i < mMarkers.size(); i++) {
+            if (mMarkers.get(i).id == id)
+            {
+                mMarkers.remove(i);
+                mDirty = true;
+                break;
             }
         }
     }
