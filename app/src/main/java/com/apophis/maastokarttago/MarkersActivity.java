@@ -139,19 +139,7 @@ public class MarkersActivity extends AppCompatActivity {
         mMarkerNames.clear();
         for (int i = 0; i < mMarkers.size(); i++) {
             Marker m = mMarkers.get(i);
-            String name;
-            double d = m.dist;
-            if (d >= 1) {
-                name = String.format(Locale.ROOT, "%s (%.1f km)", m.name, d);
-            }
-            else if (d > 0.001) {
-                name = String.format(Locale.ROOT, "%s (%.0f m)", m.name, d * 1000);
-            }
-            else {
-                name = m.name;
-            }
-
-            mMarkerNames.add(name);
+            mMarkerNames.add(Util.getMarkerString(m));
         }
         mItemsAdapter.notifyDataSetChanged();
     }

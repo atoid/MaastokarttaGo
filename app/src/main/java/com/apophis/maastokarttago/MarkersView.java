@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 class MarkersView {
     final static int NUM_MARKERS = 10;
@@ -32,7 +33,9 @@ class MarkersView {
             @Override
             public void onClick(View v) {
                 Marker m = mMarkersList.get((int) v.getTag());
-                Toast t = Toast.makeText(mApp, m.name, Toast.LENGTH_LONG);
+                mApp.updateCoords();
+                m.dist = m.distanceTo(mApp.mSettings.lat, mApp.mSettings.lng);
+                Toast t = Toast.makeText(mApp, Util.getMarkerString(m), Toast.LENGTH_LONG);
                 int yoff = (int) mApp.getResources().getDimension(R.dimen.toast_offset);
                 t.setGravity(Gravity.TOP, 0, yoff);
                 t.show();
