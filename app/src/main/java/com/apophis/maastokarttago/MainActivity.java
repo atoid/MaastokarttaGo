@@ -266,6 +266,9 @@ public class MainActivity extends AppCompatActivity {
     private void initTiles() {
         ConstraintLayout cl = findViewById(R.id.tiles);
 
+        mTileSz = (int) getResources().getDimension(R.dimen.tilesz);
+        Log.d(TAG, "tilesz: " + mTileSz);
+
         mWidth = cl.getWidth();
         mHeight = cl.getHeight();
 
@@ -274,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             if (mTileSz == 0) {
                 mTileSz = DEFAULT_TILESZ;
             }
-            Log.i(TAG, "Adjust tilesize to: " + mTileSz);
+            Log.i(TAG, "adjust tilesz to: " + mTileSz);
         }
 
         Log.d(TAG, "screen w: " + mWidth);
