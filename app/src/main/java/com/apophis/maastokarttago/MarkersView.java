@@ -1,5 +1,7 @@
 package com.apophis.maastokarttago;
 
+import android.graphics.Matrix;
+import android.graphics.Point;
 import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.Gravity;
@@ -13,11 +15,13 @@ import java.util.Locale;
 class MarkersView {
     final static int NUM_MARKERS = 10;
     ImageView[] mImages = new ImageView[NUM_MARKERS];
+    Point[] mCoords = new Point[NUM_MARKERS];
     MainActivity mApp;
     int mWidth;
     int mHeight;
     ArrayList<Marker> mMarkersList = new ArrayList<>();
     View.OnClickListener mOnMarkerClick;
+    float mRotation = 0.f;
 
     MarkersView(MainActivity app)
     {
@@ -54,6 +58,7 @@ class MarkersView {
             iw.setTag(i);
             iw.setOnClickListener(mOnMarkerClick);
             mImages[i] = iw;
+            mCoords[i] = new Point();
         }
 
         load();
@@ -66,21 +71,28 @@ class MarkersView {
 
     void moveTo(int index, int x, int y)
     {
+        mCoords[index].x = x;
+        mCoords[index].y = y;
+
+        Matrix mtx = new Matrix();
+        mtx.setRotate(360.f - mRotation, mApp.mWidth/2, mApp.mHeight/2);
+        float[] pts = {x, y};
+        mtx.mapPoints(pts);
+
         ImageView iw = mImages[index];
-        iw.setX(x - mWidth / 2);
-        iw.setY(y - mHeight);
-        iw.setVisibility(View.VISIBLE);
+        iw.setX(pts[0] - mWidth / 2);
+        iw.setY(pts[1] - mHeight);
     }
 
     void move(int dx, int dy)
     {
         for (int i = 0; i < mImages.length; i++) {
-            ImageView iw = mImages[i];
-            int nx = (int) iw.getX() + dx;
-            int ny = (int) iw.getY() + dy;
-            iw.setX(nx);
-            iw.setY(ny);
+            moveTo(i, mCoords[i].x + dx, mCoords[i].y + dy);
         }
+    }
+
+    void setRotation(float deg) {
+        mRotation = deg;
     }
 
     void update(double lat, double lng)
@@ -90,20 +102,21 @@ class MarkersView {
         int i;
         for (i = 0; i < Math.min(NUM_MARKERS, mMarkersList.size()); i++) {
             Marker m = mMarkersList.get(i);
+            ImageView iw = mImages[i];
             // Get tile where marker resides
             MapCenter ctr = mApp.calculateCenterTile(m.lat, m.lng);
             // Find if tile is in view
             int ti = mApp.findTileIndex(ctr.tilex, ctr.tiley);
             if (ti >= 0) {
                 MapTile t = mApp.mTiles[ti];
-                int x = (int) t.img.getX();
-                int y = (int) t.img.getY();
+                int x = t.x;
+                int y = t.y;
                 x += mApp.mTileSz/2 - ctr.dx;
                 y += mApp.mTileSz/2 - ctr.dy;
                 moveTo(i, x, y);
+                iw.setVisibility(View.VISIBLE);
             }
             else {
-                ImageView iw = mImages[i];
                 iw.setVisibility(View.INVISIBLE);
             }
         }

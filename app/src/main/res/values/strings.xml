@@ -15,6 +15,7 @@
     <string name="speedon">Näytä nopeus</string>
     <string name="settings">Asetukset</string>
     <string name="orange">Oranssi osoitin</string>
+    <string name="rotate">Käännä kartta</string>
 
     <!-- About dialog -->
     <string name="about">Tietoja</string>

@@ -3,6 +3,7 @@ package com.apophis.maastokarttago;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.os.BatteryManager;
 import android.support.v7.widget.PopupMenu;
 import android.view.Menu;
@@ -167,6 +168,14 @@ class AppControls {
                     return true;
                 }
 
+                // Rotate map
+                if (id == R.id.mi_rotateon) {
+                    mApp.mSettings.rotateon = !menuItem.isChecked();
+                    menuItem.setChecked(mApp.mSettings.rotateon);
+                    setRotateOnOff(mApp.mSettings.rotateon);
+                    return true;
+                }
+
                 // About
                 if (id == R.id.mi_about) {
                     mApp.mAboutDlg.show();
@@ -257,6 +266,9 @@ class AppControls {
         mi = m.findItem(R.id.mi_orangeon);
         mi.setChecked(mApp.mSettings.orangeon);
 
+        mi = m.findItem(R.id.mi_rotateon);
+        mi.setChecked(mApp.mSettings.rotateon);
+
         final ImageButton maps = mApp.findViewById(R.id.btn_maps);
         maps.bringToFront();
         maps.setOnClickListener(new View.OnClickListener() {
@@ -275,6 +287,7 @@ class AppControls {
         else {
             iwCtr.setImageResource(R.drawable.centeroff);
             iwDir.setImageAlpha(0);
+            setRotateOnOff(false);
         }
     }
 
@@ -292,6 +305,15 @@ class AppControls {
         }
         else {
             mApp.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
+    void setRotateOnOff(boolean rotate) {
+        if (!rotate) {
+            mApp.setRotation(0.f, 0.f);
+            if (mApp.mInitialized) {
+                mApp.update(mApp.mSettings.lat, mApp.mSettings.lng);
+            }
         }
     }
 
@@ -377,7 +399,11 @@ class AppControls {
                 int dx = (int) (nx - mMovex);
                 int dy = (int) (ny - mMovey);
 
-                mApp.moveTiles(dx, dy);
+                Matrix mtx = new Matrix();
+                mtx.setRotate(mApp.mRotation);
+                float[] pts = {dx, dy};
+                mtx.mapPoints(pts);
+                mApp.moveTiles(Math.round(pts[0]), Math.round(pts[1]), true);
 
                 mMovex = nx;
                 mMovey = ny;

@@ -36,6 +36,10 @@
                     android:id="@+id/mi_orangeon"
                     android:checkable="true"
                     android:title="@string/orange" />
+                <item
+                    android:id="@+id/mi_rotateon"
+                    android:checkable="true"
+                    android:title="@string/rotate" />
             </group>
         </menu>
     </item>
