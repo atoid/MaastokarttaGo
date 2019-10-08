@@ -83,9 +83,9 @@ public class MainActivity extends AppCompatActivity {
     final float DEFAULT_LAT = 64.220932f;
     final float DEFAULT_LNG = 27.727754f;
     final int DEFAULT_TILESZ = 256;
-    final String DEFAULT_URL = "http://tiles.kartat.kapsi.fi/peruskartta/";
-    final String TAUSTA_URL = "http://tiles.kartat.kapsi.fi/taustakartta/";
-    final String ORTO_URL = "http://tiles.kartat.kapsi.fi/ortokuva/";
+    final String DEFAULT_URL = "https://tiles.kartat.kapsi.fi/peruskartta/";
+    final String TAUSTA_URL = "https://tiles.kartat.kapsi.fi/taustakartta/";
+    final String ORTO_URL = "https://tiles.kartat.kapsi.fi/ortokuva/";
 
     final float ROTATE_LIMIT = 3;
     final int MAX_ZOOM = 19;
@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "rows: " + mRows);
 
         // Empty image
-        mBmEmpty = Bitmap.createBitmap(mTileSz, mTileSz, Bitmap.Config.ARGB_8888);
+        mBmEmpty = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888);
         mBmEmpty.eraseColor(0xff808080);
 
         // Create tiles
