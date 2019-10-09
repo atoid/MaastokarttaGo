@@ -49,7 +49,7 @@ class MapTile implements Target {
     int index;
 
     @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-        bm = bitmap;
+        bm = bitmap.copy(Bitmap.Config.RGB_565, false);
         dirty = true;
         handler.sendEmptyMessage(index);
     }
@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
     Canvas mCanvas;
     Handler mHandler;
     Bitmap mBmEmpty;
+    Bitmap mMainBm;
     float mRotation = 0.f;
 
     @Override
@@ -131,9 +132,11 @@ public class MainActivity extends AppCompatActivity {
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message inputMessage) {
-                MapTile tile = mTiles[inputMessage.what];
-                drawTile(tile);
-                mMainIw.invalidate();
+                if (mCanvas != null && mMainIw != null) {
+                    MapTile tile = mTiles[inputMessage.what];
+                    drawTile(tile);
+                    mMainIw.invalidate();
+                }
             }
         };
 
@@ -162,6 +165,13 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         ConstraintLayout cl = findViewById(R.id.tiles);
         cl.removeView(mMainIw);
+        mMarkers.cleanup();
+        cancelLoads();
+        mMainBm.recycle();
+        for (int i = 0; i < mTiles.length; i++) {
+            mTiles[i].bm.recycle();
+            mTiles[i].bm = null;
+        }
         mCanvas = null;
         mMainIw = null;
         mAboutDlg = null;
@@ -386,10 +396,10 @@ public class MainActivity extends AppCompatActivity {
         iw.setX(0);
         iw.setY(0);
 
-        Bitmap bm = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-        iw.setImageBitmap(bm);
+        mMainBm = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+        iw.setImageBitmap(mMainBm);
 
-        mCanvas = new Canvas(bm);
+        mCanvas = new Canvas(mMainBm);
         mCanvas.drawARGB(255, 128, 128, 128);
         mMainIw = iw;
     }
@@ -522,6 +532,12 @@ public class MainActivity extends AppCompatActivity {
         tile.dirty = false;
     }
 
+    public void cancelLoads() {
+        for (int i = 0; i < mTiles.length; i++) {
+            Picasso.with(getApplicationContext()).cancelRequest(mTiles[i]);
+        }
+    }
+
     private int moveSingleTile(MapTile tile, int dx, int dy)
     {
         int nx = tile.x + dx;
@@ -568,7 +584,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void drawTile(MapTile tile) {
-        if (tile.bm != null) {
+        if (tile.bm != null && mCanvas != null && !mMainBm.isRecycled()) {
             Rect r = new Rect();
             r.left = tile.x;
             r.right = tile.x + mTileSz;

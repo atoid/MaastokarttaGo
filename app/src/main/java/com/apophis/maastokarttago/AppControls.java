@@ -63,6 +63,7 @@ class AppControls {
             @Override
             public void onClick(View v) {
                 if (mApp.mSettings.zoom < mApp.MAX_ZOOM) {
+                    mApp.cancelLoads();
                     mApp.updateCoords();
                     mApp.mSettings.zoom++;
                     mApp.update();
@@ -76,6 +77,7 @@ class AppControls {
             @Override
             public void onClick(View v) {
                 if (mApp.mSettings.zoom > mApp.MIN_ZOOM) {
+                    mApp.cancelLoads();
                     mApp.updateCoords();
                     mApp.mSettings.zoom--;
                     mApp.update();

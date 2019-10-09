@@ -64,6 +64,13 @@ class MarkersView {
         load();
     }
 
+    void cleanup() {
+        ConstraintLayout cl = mApp.findViewById(R.id.tiles);
+        for (int i = 0; i < NUM_MARKERS; i++) {
+            cl.removeView(mImages[i]);
+        }
+    }
+
     void load() {
         mMarkersList.clear();
         Util.loadMarkers(mApp, mMarkersList);
