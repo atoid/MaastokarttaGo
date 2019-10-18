@@ -40,7 +40,6 @@ import java.util.Locale;
 class MapTile implements Target {
     int tilex;
     int tiley;
-    boolean dirty;
     Bitmap bm;
     Bitmap bmEmpty;
     int x;
@@ -49,8 +48,8 @@ class MapTile implements Target {
     int index;
 
     @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+        //Log.d("TGT", "load tile: " + index);
         bm = bitmap.copy(Bitmap.Config.RGB_565, false);
-        dirty = true;
         handler.sendEmptyMessage(index);
     }
 
@@ -529,7 +528,6 @@ public class MainActivity extends AppCompatActivity {
     {
         tile.bm = mBmEmpty;
         Picasso.with(getApplicationContext()).load(getTileUrl(tile)).resize(mTileSz, mTileSz).into(tile);
-        tile.dirty = false;
     }
 
     public void cancelLoads() {
@@ -538,8 +536,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private int moveSingleTile(MapTile tile, int dx, int dy)
+    private boolean moveSingleTile(MapTile tile, int dx, int dy)
     {
+        boolean dirty = false;
         int nx = tile.x + dx;
         int ny = tile.y + dy;
 
@@ -547,40 +546,39 @@ public class MainActivity extends AppCompatActivity {
         {
             nx -= mCols * mTileSz;
             tile.tilex -= mCols;
-            tile.dirty = true;
+            dirty = true;
         }
 
         if (ny >= (mMaxy - mTileSz/2))
         {
             ny -= mRows * mTileSz;
             tile.tiley -= mRows;
-            tile.dirty = true;
+            dirty = true;
         }
 
         if (nx < (mMinx - mTileSz/2))
         {
             nx += mCols * mTileSz;
             tile.tilex += mCols;
-            tile.dirty = true;
+            dirty = true;
         }
 
         if (ny < (mMiny - mTileSz/2))
         {
             ny += mRows * mTileSz;
             tile.tiley += mRows;
-            tile.dirty = true;
+            dirty = true;
         }
 
         tile.x = nx;
         tile.y = ny;
 
-        if (tile.dirty)
+        if (dirty)
         {
             updateTileImage(tile);
-            return 1;
         }
 
-        return 0;
+        return dirty;
     }
 
     void drawTile(MapTile tile) {
@@ -605,11 +603,11 @@ public class MainActivity extends AppCompatActivity {
             dy = (dy < 0) ? -MAX_MOVE : MAX_MOVE;
         }
 
-        int dirty = 0;
+        boolean dirty = false;
         for (int i = 0; i < mTiles.length; i++)
         {
-            if (moveSingleTile(mTiles[i], dx, dy) > 0) {
-                dirty++;
+            if (moveSingleTile(mTiles[i], dx, dy)) {
+                dirty = true;
             }
             else {
                 if (draw) {
@@ -619,16 +617,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Move or update markers
-        if (!mSettings.follow) {
-            mMarkers.move(dx, dy);
-        }
-        else {
-            if (dirty == 0) {
-                mMarkers.move(dx, dy);
-            }
-            else {
+        if (mSettings.follow) {
+            if (dirty) {
                 mMarkers.update(mSettings.lat, mSettings.lng);
             }
+            else {
+                mMarkers.move(dx, dy);
+            }
+        }
+        else {
+            mMarkers.move(dx, dy);
         }
 
         mMainIw.invalidate();
