@@ -214,8 +214,12 @@ class AppControls {
                 else if (id == R.id.mi_tausta) {
                     mApp.mSettings.url = mApp.TAUSTA_URL;
                 }
-                else {
+                else if (id == R.id.mi_maasto){
                     mApp.mSettings.url = mApp.DEFAULT_URL;
+                }
+                else if (id == R.id.mi_oma) {
+                    mApp.mUrlDlg.show();
+                    return true;
                 }
 
                 mApp.updateCoords();
@@ -235,6 +239,9 @@ class AppControls {
         }
         else if (mApp.mSettings.url.equals(mApp.ORTO_URL)) {
             mi = m.findItem(R.id.mi_orto);
+        }
+        else if (mApp.mSettings.url.equals(mApp.mSettings.ownurl)) {
+            mi = m.findItem(R.id.mi_oma);
         }
         else {
             mi = m.findItem(R.id.mi_maasto);

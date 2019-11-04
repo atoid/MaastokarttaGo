@@ -10,6 +10,7 @@ class AppSettings {
     double lng;
     boolean follow;
     String url;
+    String ownurl;
     int screenmode;
     boolean diron;
     boolean ruleron;
@@ -32,10 +33,12 @@ class AppSettings {
         lat = (double) mPrefs.getFloat("lat", mApp.DEFAULT_LAT);
         lng = (double) mPrefs.getFloat("lng", mApp.DEFAULT_LNG);
         url = mPrefs.getString("url", mApp.DEFAULT_URL);
+        ownurl = mPrefs.getString("ownurl", "");
         // Check for URL changes
         if (    !url.equals(mApp.DEFAULT_URL) &&
                 !url.equals(mApp.TAUSTA_URL) &&
-                !url.equals(mApp.ORTO_URL)) {
+                !url.equals(mApp.ORTO_URL) &&
+                !url.equals(ownurl)) {
             url = mApp.DEFAULT_URL;
         }
         screenmode = mPrefs.getInt("screenmode", mApp.SCREEN_MODE_ON);
@@ -57,6 +60,7 @@ class AppSettings {
         editor.putFloat("lat", (float) lat);
         editor.putFloat("lng", (float) lng);
         editor.putString("url", url);
+        editor.putString("ownurl", ownurl);
         editor.putInt("screenmode", screenmode);
         editor.putBoolean("diron", diron);
         editor.putBoolean("ruleron", ruleron);

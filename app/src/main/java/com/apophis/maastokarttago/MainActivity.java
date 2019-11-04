@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     AppControls mControls = new AppControls(this);
     MarkersView mMarkers = new MarkersView(this);
     AboutDlg mAboutDlg;
+    UrlDlg mUrlDlg;
     int mTileSz = DEFAULT_TILESZ;
     ImageView mMainIw;
     Canvas mCanvas;
@@ -127,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mSettings.load();
         mAboutDlg = new AboutDlg(this);
+        mUrlDlg = new UrlDlg(this);
 
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -330,7 +332,15 @@ public class MainActivity extends AppCompatActivity {
     private String getTileUrl(MapTile tile)
     {
         String url = mSettings.url;
-        url += mSettings.zoom + "/" + tile.tilex + "/" + tile.tiley + ".png";
+
+        if (url.contains("${z}")) {
+            url = url.replace("${z}", String.format(Locale.ROOT, "%d", mSettings.zoom));
+            url = url.replace("${x}", String.format(Locale.ROOT, "%d", tile.tilex));
+            url = url.replace("${y}", String.format(Locale.ROOT, "%d", tile.tiley));
+        }
+        else {
+            url += mSettings.zoom + "/" + tile.tilex + "/" + tile.tiley + ".png";
+        }
         //Log.d(TAG, "url: " + url);
         return url;
     }

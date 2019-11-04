@@ -6,6 +6,7 @@
     <string name="maasto">Maastokartta</string>
     <string name="tausta">Taustakartta</string>
     <string name="orto">Ilmakuva</string>
+    <string name="oma">Oma URL</string>
     <string name="screenmode">Näytön tila</string>
     <string name="screenoff">Saa sammua</string>
     <string name="screenchg">Latauksessa päällä</string>
@@ -38,4 +39,8 @@
     <string name="close">Sulje</string>
     <string name="save">Tallenna</string>
     <string name="remove">Poista</string>
+
+    <!-- Own URL dialog -->
+    <string name="ownurl">Oma URL</string>
+    <string name="ownurlinfo">Esimerkki tiilipalvelimen URL osoitteesta:\n\thttps://a.tile.palvelin.org/${z}/${x}/${y}.png\n\nVoit myös käyttää lyhennettyä muotoa:\n\thttps://a.tile.palvelin.org/</string>
 </resources>
