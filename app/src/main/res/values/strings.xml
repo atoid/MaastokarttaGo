@@ -23,7 +23,7 @@
     <string name="abouttitle">Maastokartta Go tietoja</string>
     <string name="location">Sijainti kartalla</string>
     <string name="licenses">Lisenssit</string>
-    <string name="licinfo">Kartta-aineistojen tarjoaja ja lisenssit:\n\thttps://kartat.kapsi.fi\n\thttps://www.kapsi.fi\n\nKarttatiilien lataukseen käytetään Picasso kirjastoa:\n\thttps://square.github.io/picasso</string>
+    <string name="licinfo">Kartta-aineistojen tarjoaja ja lisenssit:\n\thttps://kartat.kapsi.fi\n\thttps://www.kapsi.fi\n</string>
     <string name="lat_n">N: %.6f</string>
     <string name="lng_n">E: %.6f</string>
 

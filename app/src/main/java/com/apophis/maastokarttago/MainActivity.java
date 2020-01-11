@@ -7,16 +7,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.LruCache;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -30,35 +27,17 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.location.FusedLocationProviderClient;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 
-class MapTile implements Target {
+class MapTile {
     int tilex;
     int tiley;
     Bitmap bm;
-    Bitmap bmEmpty;
     int x;
     int y;
-    Handler handler;
     int index;
-
-    @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-        //Log.d("TGT", "load tile: " + index);
-        bm = bitmap.copy(Bitmap.Config.RGB_565, false);
-        handler.sendEmptyMessage(index);
-    }
-
-    @Override public void onBitmapFailed(android.graphics.drawable.Drawable errorDrawable) {
-        bm = bmEmpty;
-    }
-
-    @Override public void onPrepareLoad(Drawable placeHolderDrawable) {
-    }
 }
 
 class MapCenter {
@@ -68,7 +47,7 @@ class MapCenter {
     int dy;
 }
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TileLoadedCb{
     private static final String TAG = "MAIN";
 
     final int DEFAULT_ZOOM = 15;
@@ -85,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     final String DEFAULT_URL = "https://tiles.kartat.kapsi.fi/peruskartta/";
     final String TAUSTA_URL = "https://tiles.kartat.kapsi.fi/taustakartta/";
     final String ORTO_URL = "https://tiles.kartat.kapsi.fi/ortokuva/";
+    final String RAJAT_URL = "https://tiles.kartat.kapsi.fi/kiinteistorajat/";
 
     final float ROTATE_LIMIT = 3;
     final int MAX_ZOOM = 19;
@@ -117,10 +97,10 @@ public class MainActivity extends AppCompatActivity {
     int mTileSz = DEFAULT_TILESZ;
     ImageView mMainIw;
     Canvas mCanvas;
-    Handler mHandler;
     Bitmap mBmEmpty;
     Bitmap mMainBm;
     float mRotation = 0.f;
+    TileLoader mTileLoader = new TileLoader();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,16 +110,10 @@ public class MainActivity extends AppCompatActivity {
         mAboutDlg = new AboutDlg(this);
         mUrlDlg = new UrlDlg(this);
 
-        mHandler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message inputMessage) {
-                if (mCanvas != null && mMainIw != null) {
-                    MapTile tile = mTiles[inputMessage.what];
-                    drawTile(tile);
-                    mMainIw.invalidate();
-                }
-            }
-        };
+        RetainFragment retainFragment = RetainFragment.findOrCreateRetainFragment(getSupportFragmentManager());
+        int maxSize = (int) (Runtime.getRuntime().maxMemory() / 1024) / 8;
+        LruCache<String, Bitmap> tmp = retainFragment.getLruCache(maxSize);
+        mTileLoader.setLruCache(tmp);
 
         View view = findViewById(R.id.tiles);
         view.post(new Runnable() {
@@ -170,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
         cancelLoads();
         mMainBm.recycle();
         for (int i = 0; i < mTiles.length; i++) {
-            mTiles[i].bm.recycle();
             mTiles[i].bm = null;
         }
         mCanvas = null;
@@ -329,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
         mMainIw.setImageAlpha(alpha);
     }
 
-    private String getTileUrl(MapTile tile)
+    private String[] getTileUrls(MapTile tile)
     {
         String url = mSettings.url;
 
@@ -342,7 +315,14 @@ public class MainActivity extends AppCompatActivity {
             url += mSettings.zoom + "/" + tile.tilex + "/" + tile.tiley + ".png";
         }
         //Log.d(TAG, "url: " + url);
-        return url;
+        String[] res = new String[3];
+        res[0] = url;
+
+        // Overlays
+        //url = RAJAT_URL + mSettings.zoom + "/" + tile.tilex + "/" + tile.tiley + ".png";
+        //res[1] = url;
+
+        return res;
     }
 
     private void initTiles() {
@@ -384,11 +364,12 @@ public class MainActivity extends AppCompatActivity {
         {
             MapTile tile = new MapTile();
             tile.bm = mBmEmpty;
-            tile.bmEmpty = mBmEmpty;
             tile.index = i;
-            tile.handler = mHandler;
             mTiles[i] = tile;
         }
+
+        // Setup tile loader
+        mTileLoader.setMaxLoaders(mCols * mRows);
 
         // Boundaries
         mMinx = (mWidth - mCols * mTileSz) / 2;
@@ -537,13 +518,26 @@ public class MainActivity extends AppCompatActivity {
     void updateTileImage(MapTile tile)
     {
         tile.bm = mBmEmpty;
-        Picasso.with(getApplicationContext()).load(getTileUrl(tile)).resize(mTileSz, mTileSz).into(tile);
+        mTileLoader.load(this, getTileUrls(tile), tile.index);
     }
 
-    public void cancelLoads() {
-        for (int i = 0; i < mTiles.length; i++) {
-            Picasso.with(getApplicationContext()).cancelRequest(mTiles[i]);
+    public void setBitmap(Bitmap bm, int tag) {
+        MapTile tile = mTiles[tag];
+        if (tile != null) {
+            if (bm != null) {
+                tile.bm = bm;
+            }
+
+            if (mCanvas != null && mMainIw != null) {
+                drawTile(tile);
+                mMainIw.invalidate();
+            }
         }
+    }
+
+    public void cancelLoads()
+    {
+        mTileLoader.cancelLoads();
     }
 
     private boolean moveSingleTile(MapTile tile, int dx, int dy)
