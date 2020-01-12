@@ -7,6 +7,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.LruCache;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -17,19 +19,24 @@ interface TileLoadedCb {
 class LoadTileTask extends AsyncTask<String, Void, Bitmap> {
     final String TAG = "LOADTILETASK";
     String tileUrl;
+    InputStream tileIs = null;
     TileLoadedCb cb;
     int tag;
 
     Bitmap doLoad(String strUrl) {
+        Bitmap bm = null;
         try {
             URL url = new URL(strUrl);
-            Bitmap bm = BitmapFactory.decodeStream(url.openStream());
-            //Log.d(TAG, "Bitmap: " + bm.getConfig());
-            return bm;
+            tileIs = url.openStream();
+            bm = BitmapFactory.decodeStream(tileIs);
         }
-        catch(Exception e) {
-            return null;
+        catch (Exception e) {
+            bm = null;
         }
+        finally {
+            closeInput();
+        }
+        return bm;
     }
 
     @Override
@@ -64,6 +71,21 @@ class LoadTileTask extends AsyncTask<String, Void, Bitmap> {
     @Override
     protected void onCancelled(Bitmap bm) {
         TileLoader.setTaskDone();
+        closeInput();
+    }
+
+    void closeInput() {
+        if (tileIs != null) {
+            try {
+                tileIs.close();
+            }
+            catch (IOException e) {
+                Log.d(TAG, e.toString());
+            }
+            finally {
+                tileIs = null;
+            }
+        }
     }
 }
 

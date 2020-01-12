@@ -6,7 +6,7 @@ android {
         applicationId "com.apophis.maastokarttago"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 21
+        versionCode 22
         versionName "1.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
