@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
     final int SCREEN_MODE_ON = 2;
     final String COLOR_ORANGE = "#FF6A00";
     final int MARKER_REQUEST = 1;
+    final int MAX_TILES = 9;
 
     FusedLocationProviderClient mFusedLocationClient;
     LocationRequest mLocationRequest;
@@ -327,28 +328,28 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
 
     private void initTiles() {
         ConstraintLayout cl = findViewById(R.id.tiles);
-
-        mTileSz = (int) getResources().getDimension(R.dimen.tilesz);
-        Log.d(TAG, "tilesz: " + mTileSz);
-
         mWidth = cl.getWidth();
         mHeight = cl.getHeight();
+        Log.d(TAG, "screen w: " + mWidth);
+        Log.d(TAG, "screen h: " + mHeight);
+        int numPixels = Math.max(mWidth, mHeight);
+        mTileSz = (int) getResources().getDimension(R.dimen.tilesz);
+        Log.d(TAG, "tilesz: " + mTileSz);
 
         if (mWidth < mTileSz || mHeight < mTileSz) {
             mTileSz = Math.min(mWidth, mHeight);
             if (mTileSz == 0) {
                 mTileSz = DEFAULT_TILESZ;
             }
-            Log.i(TAG, "adjust tilesz to: " + mTileSz);
+            Log.i(TAG, "tilesz too big, adjust to: " + mTileSz);
         }
 
-        Log.d(TAG, "screen w: " + mWidth);
-        Log.d(TAG, "screen h: " + mHeight);
-
-        mCols = (1 + (mWidth - 1) / mTileSz + 2) | 1;
-        mRows = (1 + (mHeight - 1) / mTileSz + 2) | 1;
-
-        mCols = Math.max(mCols, mRows);
+        mCols = (1 + (numPixels - 1) / mTileSz + 2) | 1;
+        if (mCols > MAX_TILES) {
+            mTileSz = (int)((numPixels - 1) / (MAX_TILES - 2.5));
+            mCols = (1 + (numPixels - 1) / mTileSz + 2) | 1;
+            Log.d(TAG, "max tiles exceeded, adjust tilesz to: " + mTileSz);
+        }
         mRows = mCols;
 
         Log.d(TAG, "cols: " + mCols);
