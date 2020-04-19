@@ -4,6 +4,26 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 class AppSettings {
+    static final int SCREEN_MODE_OFF = 0;
+    static final int SCREEN_MODE_CGH = 1;
+    static final int SCREEN_MODE_ON = 2;
+    static final int DEFAULT_ZOOM = 15;
+    static final int DEFAULT_ALPHA = 200;
+    static final boolean DEFAULT_FOLLOW = true;
+    static final boolean DEFAULT_DIRON = true;
+    static final boolean DEFAULT_RULERON = true;
+    static final boolean DEFAULT_SPEEDON = true;
+    static final boolean DEFAULT_ORANGEON = false;
+    static final boolean DEFAULT_ROTATEON = false;
+    static final boolean DEFAULT_RAJATON = false;
+    static final float DEFAULT_LAT = 64.220932f;
+    static final float DEFAULT_LNG = 27.727754f;
+    static final int DEFAULT_TILESZ = 256;
+    static final String DEFAULT_URL = "https://tiles.kartat.kapsi.fi/peruskartta/";
+    static final String TAUSTA_URL = "https://tiles.kartat.kapsi.fi/taustakartta/";
+    static final String ORTO_URL = "https://tiles.kartat.kapsi.fi/ortokuva/";
+    static final String RAJAT_URL = "https://tiles.kartat.kapsi.fi/kiinteistorajat/";
+
     int zoom;
     int alpha;
     double lat;
@@ -17,6 +37,7 @@ class AppSettings {
     boolean speedon;
     boolean orangeon;
     boolean rotateon;
+    boolean rajaton;
 
     SharedPreferences mPrefs;
     MainActivity mApp;
@@ -27,26 +48,27 @@ class AppSettings {
 
     void load() {
         mPrefs = mApp.getPreferences(Context.MODE_PRIVATE);
-        alpha = mPrefs.getInt("alpha", mApp.DEFAULT_ALPHA);
-        follow = mPrefs.getBoolean("follow", mApp.DEFAULT_FOLLOW);
-        zoom = mPrefs.getInt("zoom", mApp.DEFAULT_ZOOM);
-        lat = (double) mPrefs.getFloat("lat", mApp.DEFAULT_LAT);
-        lng = (double) mPrefs.getFloat("lng", mApp.DEFAULT_LNG);
-        url = mPrefs.getString("url", mApp.DEFAULT_URL);
+        alpha = mPrefs.getInt("alpha", DEFAULT_ALPHA);
+        follow = mPrefs.getBoolean("follow", DEFAULT_FOLLOW);
+        zoom = mPrefs.getInt("zoom", DEFAULT_ZOOM);
+        lat = (double) mPrefs.getFloat("lat", DEFAULT_LAT);
+        lng = (double) mPrefs.getFloat("lng", DEFAULT_LNG);
+        url = mPrefs.getString("url", DEFAULT_URL);
         ownurl = mPrefs.getString("ownurl", "");
         // Check for URL changes
-        if (    !url.equals(mApp.DEFAULT_URL) &&
-                !url.equals(mApp.TAUSTA_URL) &&
-                !url.equals(mApp.ORTO_URL) &&
+        if (    !url.equals(DEFAULT_URL) &&
+                !url.equals(TAUSTA_URL) &&
+                !url.equals(ORTO_URL) &&
                 !url.equals(ownurl)) {
-            url = mApp.DEFAULT_URL;
+            url = DEFAULT_URL;
         }
-        screenmode = mPrefs.getInt("screenmode", mApp.SCREEN_MODE_ON);
-        diron = mPrefs.getBoolean("diron", mApp.DEFAULT_DIRON);
-        ruleron = mPrefs.getBoolean("ruleron", mApp.DEFAULT_RULERON);
-        speedon = mPrefs.getBoolean("speedon", mApp.DEFAULT_SPEEDON);
-        orangeon = mPrefs.getBoolean("orangeon", mApp.DEFAULT_ORANGEON);
-        rotateon = mPrefs.getBoolean("rotateon", mApp.DEFAULT_ROTATEON);
+        screenmode = mPrefs.getInt("screenmode", SCREEN_MODE_ON);
+        diron = mPrefs.getBoolean("diron", DEFAULT_DIRON);
+        ruleron = mPrefs.getBoolean("ruleron", DEFAULT_RULERON);
+        speedon = mPrefs.getBoolean("speedon", DEFAULT_SPEEDON);
+        orangeon = mPrefs.getBoolean("orangeon", DEFAULT_ORANGEON);
+        rotateon = mPrefs.getBoolean("rotateon", DEFAULT_ROTATEON);
+        rajaton = mPrefs.getBoolean("rajaton", DEFAULT_RAJATON);
     }
 
     void save() {
@@ -67,6 +89,7 @@ class AppSettings {
         editor.putBoolean("speedon", speedon);
         editor.putBoolean("orangeon", orangeon);
         editor.putBoolean("rotateon", rotateon);
+        editor.putBoolean("rajaton", rajaton);
         editor.apply();
     }
 }

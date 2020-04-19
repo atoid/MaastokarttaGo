@@ -2,22 +2,30 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group
-        android:id="@+id/mi_url"
-        android:checkableBehavior="single">
-        <item
-            android:id="@+id/mi_maasto"
-            android:title="@string/maasto" />
-        <item
-            android:id="@+id/mi_tausta"
-            android:title="@string/tausta" />
-        <item
-            android:id="@+id/mi_orto"
-            android:title="@string/orto" />
-        <item
-            android:id="@+id/mi_oma"
-            android:title="@string/oma" />
-    </group>
+    <item
+        android:id="@+id/mi_kartat"
+        android:title="@string/kartat" >
+        <menu >
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/mi_maasto"
+                    android:title="@string/maasto" />
+                <item
+                    android:id="@+id/mi_tausta"
+                    android:title="@string/tausta" />
+                <item
+                    android:id="@+id/mi_orto"
+                    android:title="@string/orto" />
+                <item
+                    android:id="@+id/mi_oma"
+                    android:title="@string/oma" />
+            </group>
+            <item
+                android:id="@+id/mi_rajat"
+                android:checkable="true"
+                android:title="@string/rajat" />
+        </menu>
+    </item>
     <item
         android:id="@+id/mi_settings"
         android:title="@string/settings">

@@ -115,6 +115,11 @@ public class TileLoader {
         mLoaderTasks = new LoadTileTask[maxLoaders];
     }
 
+    public void invalidateCache() {
+        cancelLoads();
+        mCache.evictAll();
+    }
+
     public void cancelLoads() {
         for (int i = 0; i < mLoaderTasks.length; i++) {
             if (mLoaderTasks[i] != null) {

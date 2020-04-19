@@ -127,7 +127,7 @@ class AppControls {
                 int id = menuItem.getItemId();
 
                 // Submenu items
-                if (id == R.id.mi_screen || id == R.id.mi_settings) {
+                if (id == R.id.mi_screen || id == R.id.mi_settings || id == R.id.mi_kartat) {
                     return false;
                 }
 
@@ -178,6 +178,15 @@ class AppControls {
                     return true;
                 }
 
+                // Property borders
+                if (id == R.id.mi_rajat) {
+                    mApp.mSettings.rajaton = !menuItem.isChecked();
+                    menuItem.setChecked(mApp.mSettings.rajaton);
+                    mApp.mTileLoader.invalidateCache();
+                    mApp.update();
+                    return true;
+                }
+
                 // About
                 if (id == R.id.mi_about) {
                     mApp.mAboutDlg.show();
@@ -192,30 +201,30 @@ class AppControls {
 
                 // Screen modes
                 if (id == R.id.mi_screenoff) {
-                    mApp.mSettings.screenmode = mApp.SCREEN_MODE_OFF;
+                    mApp.mSettings.screenmode = AppSettings.SCREEN_MODE_OFF;
                     setScreenOnOff();
                     return true;
                 }
                 if (id == R.id.mi_screenchg) {
-                    mApp.mSettings.screenmode = mApp.SCREEN_MODE_CGH;
+                    mApp.mSettings.screenmode = AppSettings.SCREEN_MODE_CGH;
                     setScreenOnOff();
                     return true;
                 }
                 if (id == R.id.mi_screenon) {
-                    mApp.mSettings.screenmode = mApp.SCREEN_MODE_ON;
+                    mApp.mSettings.screenmode = AppSettings.SCREEN_MODE_ON;
                     setScreenOnOff();
                     return true;
                 }
 
                 // Map sources
                 if (id == R.id.mi_orto) {
-                    mApp.mSettings.url = mApp.ORTO_URL;
+                    mApp.mSettings.url = AppSettings.ORTO_URL;
                 }
                 else if (id == R.id.mi_tausta) {
-                    mApp.mSettings.url = mApp.TAUSTA_URL;
+                    mApp.mSettings.url = AppSettings.TAUSTA_URL;
                 }
                 else if (id == R.id.mi_maasto){
-                    mApp.mSettings.url = mApp.DEFAULT_URL;
+                    mApp.mSettings.url = AppSettings.DEFAULT_URL;
                 }
                 else if (id == R.id.mi_oma) {
                     mApp.mUrlDlg.show();
@@ -234,10 +243,10 @@ class AppControls {
 
         Menu m = popup.getMenu();
         MenuItem mi;
-        if (mApp.mSettings.url.equals(mApp.TAUSTA_URL)) {
+        if (mApp.mSettings.url.equals(AppSettings.TAUSTA_URL)) {
             mi = m.findItem(R.id.mi_tausta);
         }
-        else if (mApp.mSettings.url.equals(mApp.ORTO_URL)) {
+        else if (mApp.mSettings.url.equals(AppSettings.ORTO_URL)) {
             mi = m.findItem(R.id.mi_orto);
         }
         else if (mApp.mSettings.url.equals(mApp.mSettings.ownurl)) {
@@ -248,10 +257,10 @@ class AppControls {
         }
         mi.setChecked(true);
 
-        if (mApp.mSettings.screenmode == mApp.SCREEN_MODE_OFF) {
+        if (mApp.mSettings.screenmode == AppSettings.SCREEN_MODE_OFF) {
             mi = m.findItem(R.id.mi_screenoff);
         }
-        else if (mApp.mSettings.screenmode == mApp.SCREEN_MODE_CGH) {
+        else if (mApp.mSettings.screenmode == AppSettings.SCREEN_MODE_CGH) {
             mi = m.findItem(R.id.mi_screenchg);
         }
         else {
@@ -278,6 +287,9 @@ class AppControls {
         mi = m.findItem(R.id.mi_rotateon);
         mi.setChecked(mApp.mSettings.rotateon);
 
+        mi = m.findItem(R.id.mi_rajat);
+        mi.setChecked(mApp.mSettings.rajaton);
+
         final ImageButton maps = mApp.findViewById(R.id.btn_maps);
         maps.bringToFront();
         maps.setOnClickListener(new View.OnClickListener() {
@@ -301,10 +313,10 @@ class AppControls {
     }
 
     void setScreenOnOff() {
-        if (mApp.mSettings.screenmode == mApp.SCREEN_MODE_OFF) {
+        if (mApp.mSettings.screenmode == AppSettings.SCREEN_MODE_OFF) {
             mApp.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-        else if (mApp.mSettings.screenmode == mApp.SCREEN_MODE_CGH) {
+        else if (mApp.mSettings.screenmode == AppSettings.SCREEN_MODE_CGH) {
             if (isCharging()) {
                 mApp.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }

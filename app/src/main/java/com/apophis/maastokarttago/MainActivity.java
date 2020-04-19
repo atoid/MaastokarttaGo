@@ -50,29 +50,10 @@ class MapCenter {
 public class MainActivity extends AppCompatActivity implements TileLoadedCb{
     private static final String TAG = "MAIN";
 
-    final int DEFAULT_ZOOM = 15;
-    final int DEFAULT_ALPHA = 200;
-    final boolean DEFAULT_FOLLOW = true;
-    final boolean DEFAULT_DIRON = true;
-    final boolean DEFAULT_RULERON = true;
-    final boolean DEFAULT_SPEEDON = true;
-    final boolean DEFAULT_ORANGEON = false;
-    final boolean DEFAULT_ROTATEON = false;
-    final float DEFAULT_LAT = 64.220932f;
-    final float DEFAULT_LNG = 27.727754f;
-    final int DEFAULT_TILESZ = 256;
-    final String DEFAULT_URL = "https://tiles.kartat.kapsi.fi/peruskartta/";
-    final String TAUSTA_URL = "https://tiles.kartat.kapsi.fi/taustakartta/";
-    final String ORTO_URL = "https://tiles.kartat.kapsi.fi/ortokuva/";
-    final String RAJAT_URL = "https://tiles.kartat.kapsi.fi/kiinteistorajat/";
-
     final float ROTATE_LIMIT = 3;
     final int MAX_ZOOM = 19;
     final int MIN_ZOOM = 7;
     final int MAX_MOVE = 200;
-    final int SCREEN_MODE_OFF = 0;
-    final int SCREEN_MODE_CGH = 1;
-    final int SCREEN_MODE_ON = 2;
     final String COLOR_ORANGE = "#FF6A00";
     final int MARKER_REQUEST = 1;
     final int MAX_TILES = 9;
@@ -95,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
     MarkersView mMarkers = new MarkersView(this);
     AboutDlg mAboutDlg;
     UrlDlg mUrlDlg;
-    int mTileSz = DEFAULT_TILESZ;
+    int mTileSz = AppSettings.DEFAULT_TILESZ;
     ImageView mMainIw;
     Canvas mCanvas;
     Bitmap mBmEmpty;
@@ -316,12 +297,14 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
             url += mSettings.zoom + "/" + tile.tilex + "/" + tile.tiley + ".png";
         }
         //Log.d(TAG, "url: " + url);
-        String[] res = new String[3];
+        String[] res = new String[2];
         res[0] = url;
 
         // Overlays
-        //url = RAJAT_URL + mSettings.zoom + "/" + tile.tilex + "/" + tile.tiley + ".png";
-        //res[1] = url;
+        if (mSettings.rajaton) {
+            url = AppSettings.RAJAT_URL + mSettings.zoom + "/" + tile.tilex + "/" + tile.tiley + ".png";
+            res[1] = url;
+        }
 
         return res;
     }
@@ -339,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
         if (mWidth < mTileSz || mHeight < mTileSz) {
             mTileSz = Math.min(mWidth, mHeight);
             if (mTileSz == 0) {
-                mTileSz = DEFAULT_TILESZ;
+                mTileSz = AppSettings.DEFAULT_TILESZ;
             }
             Log.i(TAG, "tilesz too big, adjust to: " + mTileSz);
         }
@@ -463,8 +446,8 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
             res[1] = lng;
         }
         catch(Exception e) {
-            res[0] = (double) DEFAULT_LAT;
-            res[1] = (double) DEFAULT_LNG;
+            res[0] = (double) AppSettings.DEFAULT_LAT;
+            res[1] = (double) AppSettings.DEFAULT_LNG;
         }
 
         return res;

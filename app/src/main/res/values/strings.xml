@@ -17,6 +17,8 @@
     <string name="settings">Asetukset</string>
     <string name="orange">Oranssi osoitin</string>
     <string name="rotate">Käännä kartta</string>
+    <string name="kartat">Kartat</string>
+    <string name="rajat">Kiinteistörajat</string>
 
     <!-- About dialog -->
     <string name="about">Tietoja</string>
