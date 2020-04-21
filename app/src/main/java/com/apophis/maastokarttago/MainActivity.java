@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -33,6 +34,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
@@ -41,23 +43,29 @@ class MapTile implements Target {
     int tilex;
     int tiley;
     Bitmap bm;
-    Bitmap bmEmpty;
     int x;
     int y;
-    Handler handler;
+    WeakReference<Handler> handlerRef;
     int index;
 
-    @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+    @Override
+    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
         //Log.d("TGT", "load tile: " + index);
-        bm = bitmap.copy(Bitmap.Config.RGB_565, false);
-        handler.sendEmptyMessage(index);
+        bm = bitmap;
+        Handler h = handlerRef.get();
+        if (h != null) {
+            h.sendEmptyMessage(index);
+        }
     }
 
-    @Override public void onBitmapFailed(android.graphics.drawable.Drawable errorDrawable) {
-        bm = bmEmpty;
+    @Override
+    public void onBitmapFailed(Exception e, android.graphics.drawable.Drawable errorDrawable) {
+        bm = null;
     }
 
-    @Override public void onPrepareLoad(Drawable placeHolderDrawable) {
+    @Override
+    public void onPrepareLoad(Drawable placeHolderDrawable) {
+        bm = null;
     }
 }
 
@@ -118,8 +126,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView mMainIw;
     Canvas mCanvas;
     Handler mHandler;
-    Bitmap mBmEmpty;
-    Bitmap mMainBm;
+    Paint mBgPaint;
     float mRotation = 0.f;
 
     @Override
@@ -168,11 +175,6 @@ public class MainActivity extends AppCompatActivity {
         cl.removeView(mMainIw);
         mMarkers.cleanup();
         cancelLoads();
-        mMainBm.recycle();
-        for (int i = 0; i < mTiles.length; i++) {
-            mTiles[i].bm.recycle();
-            mTiles[i].bm = null;
-        }
         mCanvas = null;
         mMainIw = null;
         mAboutDlg = null;
@@ -374,19 +376,14 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "cols: " + mCols);
         Log.d(TAG, "rows: " + mRows);
 
-        // Empty image
-        mBmEmpty = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888);
-        mBmEmpty.eraseColor(0xff808080);
-
         // Create tiles
         mTiles = new MapTile[mCols * mRows];
         for (int i = 0; i < mTiles.length; i++)
         {
             MapTile tile = new MapTile();
-            tile.bm = mBmEmpty;
-            tile.bmEmpty = mBmEmpty;
+            tile.bm = null;
             tile.index = i;
-            tile.handler = mHandler;
+            tile.handlerRef = new WeakReference<>(mHandler);
             mTiles[i] = tile;
         }
 
@@ -395,6 +392,9 @@ public class MainActivity extends AppCompatActivity {
         mMaxx = mMinx + mCols * mTileSz;
         mMiny = (mHeight - mRows * mTileSz) / 2;
         mMaxy = mMiny + mRows * mTileSz;
+
+        mBgPaint = new Paint();
+        mBgPaint.setColor(0xff808080);
 
         // Main ImageView, Bitmap and Canvas
         ImageView iw = new ImageView(this);
@@ -405,10 +405,10 @@ public class MainActivity extends AppCompatActivity {
         iw.setX(0);
         iw.setY(0);
 
-        mMainBm = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-        iw.setImageBitmap(mMainBm);
+        Bitmap bm = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+        iw.setImageBitmap(bm);
 
-        mCanvas = new Canvas(mMainBm);
+        mCanvas = new Canvas(bm);
         mCanvas.drawARGB(255, 128, 128, 128);
         mMainIw = iw;
     }
@@ -536,13 +536,12 @@ public class MainActivity extends AppCompatActivity {
 
     void updateTileImage(MapTile tile)
     {
-        tile.bm = mBmEmpty;
-        Picasso.with(getApplicationContext()).load(getTileUrl(tile)).resize(mTileSz, mTileSz).into(tile);
+        Picasso.get().load(getTileUrl(tile)).resize(mTileSz, mTileSz).into(tile);
     }
 
     public void cancelLoads() {
         for (int i = 0; i < mTiles.length; i++) {
-            Picasso.with(getApplicationContext()).cancelRequest(mTiles[i]);
+            Picasso.get().cancelRequest(mTiles[i]);
         }
     }
 
@@ -592,13 +591,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void drawTile(MapTile tile) {
-        if (tile.bm != null && mCanvas != null && !mMainBm.isRecycled()) {
+        if (mCanvas != null) {
             Rect r = new Rect();
             r.left = tile.x;
             r.right = tile.x + mTileSz;
             r.top = tile.y;
             r.bottom = tile.y + mTileSz;
-            mCanvas.drawBitmap(tile.bm, null, r, null);
+            if (tile.bm != null) {
+                mCanvas.drawBitmap(tile.bm, null, r, null);
+            }
+            else {
+                mCanvas.drawRect(r, mBgPaint);
+            }
         }
     }
 
