@@ -9,6 +9,7 @@ import android.util.LruCache;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -20,7 +21,7 @@ class LoadTileTask extends AsyncTask<String, Void, Bitmap> {
     final String TAG = "LOADTILETASK";
     String tileUrl;
     InputStream tileIs = null;
-    TileLoadedCb cb;
+    WeakReference<TileLoadedCb> cbRef;
     int tag;
 
     Bitmap doLoad(String strUrl) {
@@ -47,7 +48,7 @@ class LoadTileTask extends AsyncTask<String, Void, Bitmap> {
 
         if (!isCancelled() && bm != null && urls[1] != null) {
             Bitmap tmp = doLoad(urls[1]);
-            if (tmp != null) {
+            if (!isCancelled() && tmp != null) {
                 Bitmap bmOverlay = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), bm.getConfig());
                 Canvas canvas = new Canvas(bmOverlay);
                 canvas.drawBitmap(bm, 0, 0, null);
@@ -63,7 +64,10 @@ class LoadTileTask extends AsyncTask<String, Void, Bitmap> {
     @Override
     protected void onPostExecute(Bitmap bm) {
         //Log.d(TAG, "Set to tile");
-        cb.setBitmap(bm, tag);
+        TileLoadedCb cb = cbRef.get();
+        if (cb != null) {
+            cb.setBitmap(bm, tag);
+        }
         TileLoader.updateCache(tileUrl, bm);
         TileLoader.setTaskDone();
     }
@@ -148,7 +152,7 @@ public class TileLoader {
         //Log.d(TAG, "Cache miss: " + url);
         LoadTileTask tmp = new LoadTileTask();
         mLoaderTasks[tag] = tmp;
-        tmp.cb = cb;
+        tmp.cbRef = new WeakReference<>(cb);
         tmp.tag = tag;
 
         try {

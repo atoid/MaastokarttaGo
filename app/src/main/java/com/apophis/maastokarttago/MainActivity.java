@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.location.Location;
 import android.support.constraint.ConstraintLayout;
@@ -79,10 +80,9 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
     int mTileSz = AppSettings.DEFAULT_TILESZ;
     ImageView mMainIw;
     Canvas mCanvas;
-    Bitmap mBmEmpty;
-    Bitmap mMainBm;
     float mRotation = 0.f;
     TileLoader mTileLoader = new TileLoader();
+    Paint mBgPaint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
         cl.removeView(mMainIw);
         mMarkers.cleanup();
         cancelLoads();
-        mMainBm.recycle();
         for (int i = 0; i < mTiles.length; i++) {
             mTiles[i].bm = null;
         }
@@ -338,16 +337,12 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
         Log.d(TAG, "cols: " + mCols);
         Log.d(TAG, "rows: " + mRows);
 
-        // Empty image
-        mBmEmpty = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888);
-        mBmEmpty.eraseColor(0xff808080);
-
         // Create tiles
         mTiles = new MapTile[mCols * mRows];
         for (int i = 0; i < mTiles.length; i++)
         {
             MapTile tile = new MapTile();
-            tile.bm = mBmEmpty;
+            tile.bm = null;
             tile.index = i;
             mTiles[i] = tile;
         }
@@ -361,6 +356,9 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
         mMiny = (mHeight - mRows * mTileSz) / 2;
         mMaxy = mMiny + mRows * mTileSz;
 
+        mBgPaint = new Paint();
+        mBgPaint.setColor(0xff808080);
+
         // Main ImageView, Bitmap and Canvas
         ImageView iw = new ImageView(this);
         cl.addView(iw);
@@ -370,10 +368,10 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
         iw.setX(0);
         iw.setY(0);
 
-        mMainBm = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-        iw.setImageBitmap(mMainBm);
+        Bitmap bm = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+        iw.setImageBitmap(bm);
 
-        mCanvas = new Canvas(mMainBm);
+        mCanvas = new Canvas(bm);
         mCanvas.drawARGB(255, 128, 128, 128);
         mMainIw = iw;
     }
@@ -501,17 +499,14 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
 
     void updateTileImage(MapTile tile)
     {
-        tile.bm = mBmEmpty;
+        tile.bm = null;
         mTileLoader.load(this, getTileUrls(tile), tile.index);
     }
 
     public void setBitmap(Bitmap bm, int tag) {
         MapTile tile = mTiles[tag];
         if (tile != null) {
-            if (bm != null) {
-                tile.bm = bm;
-            }
-
+            tile.bm = bm;
             if (mCanvas != null && mMainIw != null) {
                 drawTile(tile);
                 mMainIw.invalidate();
@@ -570,13 +565,19 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
     }
 
     void drawTile(MapTile tile) {
-        if (tile.bm != null && mCanvas != null && !mMainBm.isRecycled()) {
+        if (mCanvas != null) {
             Rect r = new Rect();
             r.left = tile.x;
             r.right = tile.x + mTileSz;
             r.top = tile.y;
             r.bottom = tile.y + mTileSz;
-            mCanvas.drawBitmap(tile.bm, null, r, null);
+
+            if (tile.bm != null) {
+                mCanvas.drawBitmap(tile.bm, null, r, null);
+            }
+            else {
+                mCanvas.drawRect(r, mBgPaint);
+            }
         }
     }
 
