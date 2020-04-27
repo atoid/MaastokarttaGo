@@ -95,6 +95,9 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
         RetainFragment retainFragment = RetainFragment.findOrCreateRetainFragment(getSupportFragmentManager());
         int maxSize = (int) (Runtime.getRuntime().maxMemory() / 1024) / 8;
         LruCache<String, Bitmap> tmp = retainFragment.getLruCache(maxSize);
+        if (tmp == null) {
+            tmp = retainFragment.getLruCache(maxSize/2);
+        }
         mTileLoader.setLruCache(tmp);
 
         View view = findViewById(R.id.tiles);

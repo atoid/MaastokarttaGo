@@ -121,7 +121,9 @@ public class TileLoader {
 
     public void invalidateCache() {
         cancelLoads();
-        mCache.evictAll();
+        if (mCache != null) {
+            mCache.evictAll();
+        }
     }
 
     public void cancelLoads() {
