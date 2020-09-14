@@ -14,7 +14,7 @@ import java.util.Locale;
 
 class MarkersView {
     final static int NUM_MARKERS = 10;
-    ImageView[] mImages = new ImageView[NUM_MARKERS];
+    int[] mImageIds = new int[NUM_MARKERS];
     Point[] mCoords = new Point[NUM_MARKERS];
     MainActivity mApp;
     int mWidth;
@@ -57,7 +57,9 @@ class MarkersView {
             iw.setVisibility(View.INVISIBLE);
             iw.setTag(i);
             iw.setOnClickListener(mOnMarkerClick);
-            mImages[i] = iw;
+            int id = View.generateViewId();
+            iw.setId(id);
+            mImageIds[i] = id;
             mCoords[i] = new Point();
         }
 
@@ -65,10 +67,10 @@ class MarkersView {
     }
 
     void cleanup() {
-        ConstraintLayout cl = mApp.findViewById(R.id.tiles);
-        for (int i = 0; i < NUM_MARKERS; i++) {
-            cl.removeView(mImages[i]);
-        }
+        //ConstraintLayout cl = mApp.findViewById(R.id.tiles);
+        //for (int i = 0; i < NUM_MARKERS; i++) {
+        //    cl.removeView(mImages[i]);
+        //}
     }
 
     void load() {
@@ -86,14 +88,14 @@ class MarkersView {
         float[] pts = {x, y};
         mtx.mapPoints(pts);
 
-        ImageView iw = mImages[index];
+        ImageView iw = mApp.findViewById(mImageIds[index]);
         iw.setX(pts[0] - mWidth / 2);
         iw.setY(pts[1] - mHeight);
     }
 
     void move(int dx, int dy)
     {
-        for (int i = 0; i < mImages.length; i++) {
+        for (int i = 0; i < mImageIds.length; i++) {
             moveTo(i, mCoords[i].x + dx, mCoords[i].y + dy);
         }
     }
@@ -109,7 +111,7 @@ class MarkersView {
         int i;
         for (i = 0; i < Math.min(NUM_MARKERS, mMarkersList.size()); i++) {
             Marker m = mMarkersList.get(i);
-            ImageView iw = mImages[i];
+            ImageView iw = mApp.findViewById(mImageIds[i]);
             // Get tile where marker resides
             MapCenter ctr = mApp.calculateCenterTile(m.lat, m.lng);
             // Find if tile is in view
@@ -130,7 +132,7 @@ class MarkersView {
 
         // Hide rest
         for (; i < NUM_MARKERS; i++) {
-            ImageView iw = mImages[i];
+            ImageView iw = mApp.findViewById(mImageIds[i]);
             iw.setVisibility(View.INVISIBLE);
         }
     }

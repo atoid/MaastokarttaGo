@@ -412,7 +412,7 @@ class AppControls {
                 mtx.setRotate(mApp.mRotation);
                 float[] pts = {dx, dy};
                 mtx.mapPoints(pts);
-                mApp.moveTiles(Math.round(pts[0]), Math.round(pts[1]), true);
+                mApp.moveTiles(Math.round(pts[0]), Math.round(pts[1]));
 
                 mMovex = nx;
                 mMovey = ny;

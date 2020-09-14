@@ -4,15 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
+import android.graphics.Matrix;
 import android.location.Location;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -32,41 +25,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.location.FusedLocationProviderClient;
 
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 
-class MapTile implements Target {
+class MapTile {
     int tilex;
     int tiley;
-    Bitmap bm;
     int x;
     int y;
-    WeakReference<Handler> handlerRef;
-    int index;
-
-    @Override
-    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-        //Log.d("TGT", "load tile: " + index);
-        bm = bitmap;
-        Handler h = handlerRef.get();
-        if (h != null) {
-            h.sendEmptyMessage(index);
-        }
-    }
-
-    @Override
-    public void onBitmapFailed(Exception e, android.graphics.drawable.Drawable errorDrawable) {
-        bm = null;
-    }
-
-    @Override
-    public void onPrepareLoad(Drawable placeHolderDrawable) {
-        bm = null;
-    }
+    int id;
 }
 
 class MapCenter {
@@ -123,10 +92,6 @@ public class MainActivity extends AppCompatActivity {
     AboutDlg mAboutDlg;
     UrlDlg mUrlDlg;
     int mTileSz = DEFAULT_TILESZ;
-    ImageView mMainIw;
-    Canvas mCanvas;
-    Handler mHandler;
-    Paint mBgPaint;
     float mRotation = 0.f;
 
     @Override
@@ -136,17 +101,6 @@ public class MainActivity extends AppCompatActivity {
         mSettings.load();
         mAboutDlg = new AboutDlg(this);
         mUrlDlg = new UrlDlg(this);
-
-        mHandler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message inputMessage) {
-                if (mCanvas != null && mMainIw != null) {
-                    MapTile tile = mTiles[inputMessage.what];
-                    drawTile(tile);
-                    mMainIw.invalidate();
-                }
-            }
-        };
 
         View view = findViewById(R.id.tiles);
         view.post(new Runnable() {
@@ -171,13 +125,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ConstraintLayout cl = findViewById(R.id.tiles);
-        cl.removeView(mMainIw);
-        mMarkers.cleanup();
+        //mMarkers.cleanup();
         cancelLoads();
-        mCanvas = null;
-        mMainIw = null;
-        mAboutDlg = null;
         mSettings.save();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Log.d(TAG, "onDestroy");
@@ -299,6 +248,23 @@ public class MainActivity extends AppCompatActivity {
         return mControls.onTouchEvent(event);
     }
 
+    void setTileRotations(float deg) {
+        Matrix mtx = new Matrix();
+        mtx.setRotate(360.f-deg, mWidth/2, mHeight/2);
+
+        for (int i = 0; i < mTiles.length; i++) {
+            MapTile t = mTiles[i];
+
+            float[] pts = {t.x + mTileSz/2, t.y + mTileSz/2};
+            mtx.mapPoints(pts);
+
+            ImageView iw = findViewById(t.id);
+            iw.setX(pts[0] - mTileSz/2);
+            iw.setY(pts[1] - mTileSz/2);
+            iw.setRotation(360.f-deg);
+        }
+    }
+
     void setRotation(float deg, float speed) {
         ImageView iw_dir = findViewById(R.id.dir_icon);
         if (mSettings.rotateon && mSettings.follow) {
@@ -313,8 +279,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mMarkers.setRotation(mRotation);
-        mCanvas.setMatrix(null);
-        mCanvas.rotate(360.f - mRotation, mWidth/2, mHeight/2);
     }
 
     void updateCoords() {
@@ -328,7 +292,10 @@ public class MainActivity extends AppCompatActivity {
 
     void setBrightness(int alpha)
     {
-        mMainIw.setImageAlpha(alpha);
+        for (int i = 0; i < mTiles.length; i++) {
+            ImageView iw = findViewById(mTiles[i].id);
+            iw.setAlpha(alpha);
+        }
     }
 
     private String getTileUrl(MapTile tile)
@@ -381,10 +348,12 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < mTiles.length; i++)
         {
             MapTile tile = new MapTile();
-            tile.bm = null;
-            tile.index = i;
-            tile.handlerRef = new WeakReference<>(mHandler);
+            tile.id = View.generateViewId();
             mTiles[i] = tile;
+
+            ImageView iw = new ImageView(this);
+            iw.setId(tile.id);
+            cl.addView(iw);
         }
 
         // Boundaries
@@ -392,25 +361,6 @@ public class MainActivity extends AppCompatActivity {
         mMaxx = mMinx + mCols * mTileSz;
         mMiny = (mHeight - mRows * mTileSz) / 2;
         mMaxy = mMiny + mRows * mTileSz;
-
-        mBgPaint = new Paint();
-        mBgPaint.setColor(0xff808080);
-
-        // Main ImageView, Bitmap and Canvas
-        ImageView iw = new ImageView(this);
-        cl.addView(iw);
-        iw.getLayoutParams().width = mWidth;
-        iw.getLayoutParams().height = mHeight;
-        iw.requestLayout();
-        iw.setX(0);
-        iw.setY(0);
-
-        Bitmap bm = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-        iw.setImageBitmap(bm);
-
-        mCanvas = new Canvas(bm);
-        mCanvas.drawARGB(255, 128, 128, 128);
-        mMainIw = iw;
     }
 
     void resetTilePositions()
@@ -536,12 +486,14 @@ public class MainActivity extends AppCompatActivity {
 
     void updateTileImage(MapTile tile)
     {
-        Picasso.get().load(getTileUrl(tile)).resize(mTileSz, mTileSz).into(tile);
+        ImageView iw = findViewById(tile.id);
+        Picasso.get().load(getTileUrl(tile)).resize(mTileSz, mTileSz).into(iw);
     }
 
     public void cancelLoads() {
         for (int i = 0; i < mTiles.length; i++) {
-            Picasso.get().cancelRequest(mTiles[i]);
+            ImageView iw = findViewById(mTiles[i].id);
+            Picasso.get().cancelRequest(iw);
         }
     }
 
@@ -590,23 +542,7 @@ public class MainActivity extends AppCompatActivity {
         return dirty;
     }
 
-    void drawTile(MapTile tile) {
-        if (mCanvas != null) {
-            Rect r = new Rect();
-            r.left = tile.x;
-            r.right = tile.x + mTileSz;
-            r.top = tile.y;
-            r.bottom = tile.y + mTileSz;
-            if (tile.bm != null) {
-                mCanvas.drawBitmap(tile.bm, null, r, null);
-            }
-            else {
-                mCanvas.drawRect(r, mBgPaint);
-            }
-        }
-    }
-
-    void moveTiles(int dx, int dy, boolean draw) {
+    void moveTiles(int dx, int dy) {
         if (Math.abs(dx) > MAX_MOVE)
         {
             dx = (dx < 0) ? -MAX_MOVE : MAX_MOVE;
@@ -623,13 +559,8 @@ public class MainActivity extends AppCompatActivity {
             if (moveSingleTile(mTiles[i], dx, dy)) {
                 dirty = true;
             }
-            else {
-                if (draw) {
-                    drawTile(mTiles[i]);
-                }
-            }
         }
-
+        
         // Move or update markers
         if (mSettings.follow) {
             if (dirty) {
@@ -643,7 +574,8 @@ public class MainActivity extends AppCompatActivity {
             mMarkers.move(dx, dy);
         }
 
-        mMainIw.invalidate();
+        // Update tile rotations
+        setTileRotations(mRotation);
     }
 
     int findTileIndex(int tilex, int tiley)
@@ -694,7 +626,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (Math.abs(dx) <= MAX_MOVE && Math.abs(dy) <= MAX_MOVE)
         {
-            moveTiles(dx, dy, true);
+            moveTiles(dx, dy);
             return 0;
         }
 
@@ -703,7 +635,6 @@ public class MainActivity extends AppCompatActivity {
 
     void update()
     {
-        mCanvas.drawARGB(255, 128, 128, 128);
         update(mSettings.lat, mSettings.lng, true);
     }
 
@@ -728,7 +659,7 @@ public class MainActivity extends AppCompatActivity {
         if (i < 0) {
             Log.d(TAG, "Tiles full reset");
             resetTilePositions();
-            moveTiles(ctr.dx, ctr.dy, false);
+            moveTiles(ctr.dx, ctr.dy);
             setTileImages(ctr.tilex, ctr.tiley);
             setBrightness(mSettings.alpha);
             mMarkers.update(lat, lng);
