@@ -1,0 +1,5 @@
+Maastokartta Go sovelluksen tietosuojakäytäntö
+
+Maastokartta Go sovellus ei kerää mitään tietoa käyttäjistä, käyttäjien laitteista, sijainnista tai  
+verkkoyhteyden IP osoitteesta, eikä tietoja lähetetä mihinkään. Sovelluksessa tallennettujen paikkojen
+tiedot tallennetaan laitteen sisäiseen muistiin.
