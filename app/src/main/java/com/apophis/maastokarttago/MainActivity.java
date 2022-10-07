@@ -114,10 +114,17 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
         });
 
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION},
                 1);
 
         Log.d(TAG, "onCreate");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mSettings.save();
     }
 
     @Override
@@ -133,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
         mCanvas = null;
         mMainIw = null;
         mAboutDlg = null;
-        mSettings.save();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Log.d(TAG, "onDestroy");
     }
@@ -225,7 +231,12 @@ public class MainActivity extends AppCompatActivity implements TileLoadedCb{
                         mAboutDlg.updateCoords(mSettings.lat, mSettings.lng);
                     }
                     TextView tv_speed = findViewById(R.id.map_speed);
-                    tv_speed.setText(String.format(Locale.ROOT, "%.0f", speed));
+                    if (speed < 10.f) {
+                        tv_speed.setText(String.format(Locale.ROOT, "%.1f", speed));
+                    }
+                    else {
+                        tv_speed.setText(String.format(Locale.ROOT, "%.0f", speed));
+                    }
                 }
             }
         };
