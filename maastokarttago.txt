@@ -1,5 +1,14 @@
+Maastokartta Go app
+
+https://play.google.com/store/apps/details?id=com.apophis.maastokarttago
+https://play.google.com/store/apps/developer?id=Matti+Kantola
+
 Maastokartta Go sovelluksen tietosuojakäytäntö
 
 Maastokartta Go sovellus ei kerää mitään tietoa käyttäjistä, käyttäjien laitteista, sijainnista tai  
 verkkoyhteyden IP osoitteesta, eikä tietoja lähetetä mihinkään. Sovelluksessa tallennettujen paikkojen
 tiedot tallennetaan laitteen sisäiseen muistiin.
+
+Yhteydenotot
+
+apophis@kajaani.net
